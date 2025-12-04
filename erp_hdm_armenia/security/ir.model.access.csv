@@ -1,0 +1,5 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+"access_hdm_connection","erp_hdm_connection","model_hdm_connection",base.group_user,1,1,1,1
+"access_hdm_receipt","erp_hdm_receipt","model_hdm_receipt",base.group_user,1,1,1,0
+
+

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.pos_sale</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="pos_accounting_section" position="before">
+                <block title="Hdm Configuration" id="hdm_pos_section">
+                    <setting id="default_hdm_configuration">
+                        <label string="POS HDM Connection" for="hdm_connection_id"/>
+                        <div class="text-muted">
+                            HDM Device settings
+                        </div>
+                        <div class="content-group mt16">
+                            <field name="hdm_connection_id" colspan="4" nolabel="1"/>
+                        </div>
+                    </setting>
+                    <setting string="Default Type and Taxes" id="hdm_pos_default_types">
+                        <div class="content-group mt16">
+                            <div class="row">
+                                <div class="col-6">
+                                    <label string="Tax Department" for="use_dep"/>
+                                    <field name="use_dep" colspan="4" nolabel="1"/>
+                                    <field name="hdm_dep" readonly="not use_dep"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <label string="False: Single receipt type" for="use_hdm_type"/>
+                                    <field name="use_hdm_type"/>
+                                     <label string="Receipt Type" for="use_hdm_type"/>
+                                    <field name="hdm_type"/>
+                                </div>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+</odoo>

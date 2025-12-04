@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_hdm_receipt_tree" model="ir.ui.view">
+        <field name="name">hdm.receipt.tree</field>
+        <field name="model">hdm.receipt</field>
+        <field name="arch" type="xml">
+            <list string="HDM Receipts">
+                <field name="name"/>
+                <field name="hdm_type"/>
+                <field name="crn"/>
+                <field name="rseq"/>
+                <field name="returned_rseq"/>
+                <field name="returned_time"/>
+                <field name="returned_cash"/>
+                <field name="returned_card"/>
+                <field name="related_hdm_receipt_id"/>
+                <field name="company_id"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_hdm_receipt_form" model="ir.ui.view">
+        <field name="name">hdm.receipt.form</field>
+        <field name="model">hdm.receipt</field>
+        <field name="arch" type="xml">
+            <form string="HDM Receipt">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="hdm_type"/>
+                            <field name="crn"/>
+                            <field name="rseq"/>
+                            <field name="total"/>
+                        </group>
+                        <group>
+                            <field name="returned_rseq"/>
+                            <field name="returned_time"/>
+                            <field name="returned_cash"/>
+                            <field name="returned_card"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="related_hdm_receipt_id"/>
+                        <field name="company_id" readonly="1"/>
+                        <field name="create_date" readonly="1"/>
+                    </group>
+                    <group>
+                        <button name="action_open_related_record"
+                                type="object"
+                                string="Open Related Record"
+                                class="btn-primary"/>
+                    </group>
+
+                    <footer>
+                        <button name="action_open_related_record"
+                                type="object"
+                                string="Open Related Record"
+                                class="btn-primary"/>
+                        <button string="Close" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_hdm_receipt" model="ir.actions.act_window">
+        <field name="name">HDM Receipts</field>
+        <field name="res_model">hdm.receipt</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first HDM Receipt
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item -->
+    <menuitem id="menu_hdm_receipt_root"
+              name="HDM Receipts"
+              parent="point_of_sale.menu_point_root"
+              action="action_hdm_receipt"
+              sequence="50"/>
+
+</odoo>
