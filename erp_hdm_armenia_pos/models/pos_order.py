@@ -239,7 +239,6 @@ class PosOrder(models.Model):
         hdm_type = int(hdm_type) or int(pos_config.hdm_type)
         self.write({'hdm_type': str(hdm_type)})
         hdm_data = self._prepare_invoice_hdm_data(hdm_dep, hdm_type, payment, **kwargs)
-        print(hdm_data, 'HDM DATA')
         response = pos_connection.send_request_to_hdm(id=pos_id, code=4, data=hdm_data)
         if response.get('hdm_error'):
             return response
