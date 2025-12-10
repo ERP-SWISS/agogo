@@ -1,6 +1,4 @@
 import logging
-import struct
-import json
 
 from odoo import api, fields, models, _, Command
 from odoo.exceptions import ValidationError, AccessError
@@ -11,17 +9,17 @@ _logger = logging.getLogger(__name__)
 class PosOrderLine(models.Model):
     _inherit = 'pos.order.line'
 
-    def _prepare_hdm_item_data(self) -> dict:
+    def _prepare_hdm_item_data(self, hdm_dep) -> dict:
         self.ensure_one()
         hs_code = self.product_id.hs_code or self.product_id.product_tmpl_id and self.product_id.product_tmpl_id.hs_code
         item = {
-            "dep": self.product_id.hdm_dep or 1,
+            "dep": self.product_id.hdm_dep or hdm_dep,
             "adgCode": hs_code,
             "productCode": self.product_id.id,
             "productName": self.product_id.hdm_product_name,
             "qty": self.qty,
             "unit": self.product_uom_id.name,
-            "price": self.price_subtotal_incl / self.qty,
+            "price": round(self.price_subtotal_incl / self.qty, 2)
         }
         if self.discount:
             item.update({
@@ -80,9 +78,8 @@ class PosOrder(models.Model):
         return self.lines.filtered(lambda l: l.product_id.id != self.config_id.down_payment_product_id.id).sorted(
             'id')
 
-    def _prepare_invoice_hdm_data(self, hdm_dep, hdm_type) -> dict:
+    def _prepare_already_payd_hdm_data(self, hdm_dep, hdm_type, **kwargs) -> dict:
         self.ensure_one()
-
         cash_amount, bank_amount = 0, 0
         payments = self.payment_ids.filtered(
             lambda p: p.payment_method_id.fiscal_payment_type in ['cash',
@@ -102,8 +99,8 @@ class PosOrder(models.Model):
                 bank_amount += payment.amount
         data = {
             "items": None,
-            "paidAmount": round(cash_amount, 1),
-            "paidAmountCard": round(bank_amount, 1),
+            "paidAmount": round(cash_amount, 2),
+            "paidAmountCard": round(bank_amount, 2),
             "partialAmount": 0,
             "prePaymentAmount": round(prepayment_amount),
             "useExtPOS": True if bool(bank_amount) else False,
@@ -112,11 +109,48 @@ class PosOrder(models.Model):
             "partnerTin": None,
             "seq": self.config_id.hdm_connection_id.hdm_seq,
         }
+        data.update(kwargs)
         if hdm_type == 1:
             data['dep'] = hdm_dep
         if hdm_type == 2:
-            data['items'] = [line._prepare_hdm_item_data() for line in
+            data['items'] = [line._prepare_hdm_item_data(hdm_dep) for line in
                              self.get_lines_without_downpayment()]
+        return data
+
+    def _prepare_invoice_hdm_data(self, hdm_dep, hdm_type, payment_method_id, **kwargs) -> dict:
+        self.ensure_one()
+        if not payment_method_id:
+            return self._prepare_already_payd_hdm_data(hdm_dep, hdm_type, **kwargs)
+        data = {
+            "items": None,
+            "paidAmount": 0,
+            "paidAmountCard": 0,
+            "partialAmount": 0,
+            "prePaymentAmount": 0,
+            "useExtPOS": False,
+            'eMarks': [],
+            "mode": hdm_type,
+            "partnerTin": None,
+            "seq": self.config_id.hdm_connection_id.hdm_seq,
+        }
+        if payment_method_id.fiscal_payment_type == 'cash':
+            updated_data = {
+                "paidAmount": round(self.amount_total, 2),
+            }
+        else:
+            updated_data = {
+                "paidAmountCard": round(self.amount_total, 2),
+            }
+            if payment_method_id.use_ext_pos:
+                updated_data["useExtPOS"] = True
+
+        data.update({**kwargs, **updated_data})
+        if hdm_type == 1:
+            data['dep'] = hdm_dep
+        if hdm_type == 2:
+            data['items'] = [line._prepare_hdm_item_data(hdm_dep) for line in
+                             self.get_lines_without_downpayment()]
+        print(data, 'INVOICE DATA')
         return data
 
     def check_refund_status(self):
@@ -194,7 +228,7 @@ class PosOrder(models.Model):
         })
         return {'success': True, 'fiscal_uuid': response.get('fiscal', '')}
 
-    def hdm_receipt_send(self, hdm_type, hdm_dep=False, *args, **kwargs):
+    def hdm_receipt_send(self, hdm_type=False, hdm_dep=False, payment=False, *args, **kwargs):
         self.ensure_one()
         if self.check_refund_status():
             return self.hdm_return_order()
@@ -204,7 +238,8 @@ class PosOrder(models.Model):
         hdm_dep = int(hdm_dep) or int(pos_config.hdm_dep)
         hdm_type = int(hdm_type) or int(pos_config.hdm_type)
         self.write({'hdm_type': str(hdm_type)})
-        hdm_data = self._prepare_invoice_hdm_data(hdm_dep, hdm_type)
+        hdm_data = self._prepare_invoice_hdm_data(hdm_dep, hdm_type, payment, **kwargs)
+        print(hdm_data, 'HDM DATA')
         response = pos_connection.send_request_to_hdm(id=pos_id, code=4, data=hdm_data)
         if response.get('hdm_error'):
             return response

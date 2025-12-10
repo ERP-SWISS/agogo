@@ -1,11 +1,5 @@
-# -*- coding: utf-8 -*-
-from datetime import datetime
-from uuid import uuid4
-import pytz
 
 from odoo import api, fields, models, _, Command
-from odoo.http import request
-from odoo.osv.expression import OR, AND
 from odoo.exceptions import AccessError, ValidationError, UserError
 
 
@@ -23,7 +17,3 @@ class PosConfig(models.Model):
     use_hdm_type = fields.Boolean(string='Use HDM Type', default=True)
 
 
-class PosPaymentMethod(models.Model):
-    _inherit = 'pos.payment.method'
-
-    fiscal_payment_type = fields.Selection(related='journal_id.type', string='Fiscal Payment Type')
