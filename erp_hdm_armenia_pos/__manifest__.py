@@ -16,9 +16,9 @@
         'pos_self_order.assets': [
             'erp_hdm_armenia_pos/static/src/kiosk/**/*',
         ],
-        # 'point_of_sale._assets_pos': [
-        #     'erp_hdm_armenia_pos/static/src/pos/**/*',
-        # ],
+        'point_of_sale._assets_pos': [
+            'erp_hdm_armenia_pos/static/src/pos/**/*',
+        ],
     },
 
 }
