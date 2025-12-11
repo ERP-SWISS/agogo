@@ -108,9 +108,8 @@ class PosPaymentMethod(models.Model):
             if self.use_ext_pos:
                 updated_data["useExtPOS"] = True
         data.update({**kwargs, **updated_data})
-        print("HDM PAYMENT REQUEST DATA:", data)
         response = pos_connection.send_request_to_hdm(id=pos_id, code=4, data=data)
-        if response.get('hdm_error'):
+        if response is False or response.get('hdm_error'):
             return response
         if response:
             receipt = response.get('fiscal', '')
@@ -130,7 +129,6 @@ class PosPaymentMethod(models.Model):
     def hdm_pos_payment_refund(self, config_id, amount, refunded_line_id, lines=False, hdm_dep=False, hdm_type=False,
                                *args,
                                **kwargs):
-        print(lines)
         pos_config = self.env['pos.config'].browse(config_id)
         pos_connection, pos_id, _, _ = self._construct_hdm_connection(pos_config)
 
