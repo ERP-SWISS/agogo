@@ -19,6 +19,5 @@
         'point_of_sale._assets_pos': [
             'erp_hdm_armenia_pos/static/src/pos/**/*',
         ],
-    },
-
+    }
 }

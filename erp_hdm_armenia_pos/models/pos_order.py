@@ -47,17 +47,14 @@ class PosOrder(models.Model):
     @api.model
     def _order_fields(self, ui_order):
         fields = super()._order_fields(ui_order)
-        fields['hdm_type'] = ui_order.get('hdm_type')
-        fields['fiscal_uuid'] = ui_order.get('fiscal_uuid')
+        if ui_order.get('hdm_type'):
+            fields['hdm_type'] = ui_order.get('hdm_type')
+        if ui_order.get('fiscal_uuid'):
+            fields['fiscal_uuid'] = ui_order.get('fiscal_uuid')
+        if ui_order.get('fiscal_receipt_id'):
+            fields['fiscal_receipt_id'] = ui_order.get('fiscal_receipt_id', False)
         return fields
 
-    def _export_for_ui(self, order):
-        response = super()._export_for_ui(order)
-        response['fiscal_uuid'] = order.fiscal_uuid
-        if order.hdm_type:
-            response['hdm_type'] = order.hdm_type
-
-        return response
 
     def hdm_type_display(self) -> list:
         self.ensure_one()

@@ -5,7 +5,8 @@
         <field name="model">pos.payment.method</field>
         <field name="inherit_id" ref="point_of_sale.pos_payment_method_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='use_payment_terminal']" position="after">
+            <xpath expr="//field[@name='payment_method_type']" position="after">
+                <field name="use_payment_terminal"/>
                 <field name="use_ext_pos" invisible="use_payment_terminal != 'hdm'"/>
             </xpath>
         </field>

@@ -34,7 +34,7 @@ class SocketConnection:
         except (BrokenPipeError, ConnectionResetError, OSError):
             return False
 
-    def connect(self, host: str | tuple, id: int, timeout=45) -> socket.socket | None:
+    def connect(self, host: str | tuple, id: int, timeout=60) -> socket.socket | None:
         if client := self.connection.get(id):
             if self.check_connection(client):
                 _logger.info("Using existing connection")

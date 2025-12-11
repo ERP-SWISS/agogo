@@ -21,6 +21,7 @@ patch(PaymentScreen.prototype, {
     async addNewPaymentLine(paymentMethod) {
         if (paymentMethod.use_payment_terminal === "hdm" && this.isRefundOrder) {
             const refundedOrder = this.currentOrder.lines[0]?.refunded_orderline_id?.order_id;
+            if (!refundedOrder){return await super.addNewPaymentLine(paymentMethod);}
             const amountDue = Math.abs(this.currentOrder.remainingDue);
             const matchedPaymentLine = refundedOrder.payment_ids.find(
                 (line) =>
