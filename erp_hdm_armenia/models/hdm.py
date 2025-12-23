@@ -94,6 +94,22 @@ class HDMConnection(models.Model):
             _logger.error(f'Error unpack response status from HDM: {E}')
             return {'hdm_error': 'Failed to unpack response status from HDM.'}
 
+    def create_log_entry(self, error_data, request_data,  model=False, res_id=False):
+        self.ensure_one()
+        if ':' in str(error_data):
+            code, message = error_data.split(': ')
+        else:
+            code, message = 'Unknown', str(error_data)
+
+        self.env['hdm.log'].create({
+            'name': f'HDM Request Error {code} - {message}',
+            'code': int(code),
+            'terminal_id': self.id,
+            'req_data': request_data,
+            'model_name': model,
+            'res_id': res_id,
+        })
+
     def send_request_to_hdm(self, id, code, data):
         self.ensure_one()
         pos_connection = self

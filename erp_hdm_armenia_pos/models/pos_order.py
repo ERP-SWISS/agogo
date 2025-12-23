@@ -55,7 +55,6 @@ class PosOrder(models.Model):
             fields['fiscal_receipt_id'] = ui_order.get('fiscal_receipt_id', False)
         return fields
 
-
     def hdm_type_display(self) -> list:
         self.ensure_one()
         prepayment_line = bool(
@@ -204,7 +203,10 @@ class PosOrder(models.Model):
                 "cardAmountForReturn": round(abs(bank_amount)),
             })
         response = pos_connection.send_request_to_hdm(id=pos_id, code=6, data=hdm_data)
-        if response.get('hdm_error'):
+        if response is False or response.get('hdm_error'):
+            pos_connection.create_log_entry(response.get('hdm_error', 'Unknown HDM error occurred.'),
+                                            request_data=hdm_data,
+                                            model=self._name, res_id=self.id)
             return response
 
         receipt_id = self.env['hdm.receipt'].sudo().create({
@@ -238,6 +240,8 @@ class PosOrder(models.Model):
         hdm_data = self._prepare_invoice_hdm_data(hdm_dep, hdm_type, payment, **kwargs)
         response = pos_connection.send_request_to_hdm(id=pos_id, code=4, data=hdm_data)
         if response.get('hdm_error'):
+            pos_connection.create_log_entry(response.get('hdm_error', 'Unknown HDM error occurred.'), request_data=hdm_data,
+                                            model=self._name, res_id=self.id)
             return response
 
         if response:

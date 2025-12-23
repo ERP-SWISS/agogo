@@ -59,7 +59,9 @@ class PosPaymentMethod(models.Model):
                 "productName": product_id.hdm_product_name,
                 "qty": line.get('qty', 1),
                 "unit": product_id.uom_id.name,
-                "price": round(line.get('price_unit', 1) * line.get('discount') / 100 if line.get('discount', 0) else line.get('price_unit', 1), 2),
+                "price": round(
+                    line.get('price_unit', 1) * line.get('discount') / 100 if line.get('discount', 0) else line.get(
+                        'price_unit', 1), 2),
             }
             if line.get('discount', 0):
                 item.update({
@@ -96,7 +98,8 @@ class PosPaymentMethod(models.Model):
         pos_config = self.env['pos.config'].browse(config_id)
         pos_connection, pos_id, hdm_dep, hdm_type = self._construct_hdm_connection(pos_config, hdm_dep, hdm_type)
 
-        data = self.init_hdm_start_data(seq=pos_config.hdm_connection_id.hdm_seq, hdm_type=hdm_type, hdm_dep=hdm_dep, lines=lines)
+        data = self.init_hdm_start_data(seq=pos_config.hdm_connection_id.hdm_seq, hdm_type=hdm_type, hdm_dep=hdm_dep,
+                                        lines=lines)
         if self.fiscal_payment_type == 'cash':
             updated_data = {
                 "paidAmount": abs(round(amount, 2)),
@@ -110,6 +113,8 @@ class PosPaymentMethod(models.Model):
         data.update({**kwargs, **updated_data})
         response = pos_connection.send_request_to_hdm(id=pos_id, code=4, data=data)
         if response is False or response.get('hdm_error'):
+            pos_connection.create_log_entry(response.get('hdm_error', 'Unknown HDM error occurred.'), request_data=data,
+                                            model=self._name)
             return response
         if response:
             receipt = response.get('fiscal', '')
@@ -153,6 +158,8 @@ class PosPaymentMethod(models.Model):
         hdm_data.update({**kwargs, **updated_data})
         response = pos_connection.send_request_to_hdm(id=pos_id, code=6, data=hdm_data)
         if response.get('hdm_error'):
+            pos_connection.create_log_entry(response.get('hdm_error', 'Unknown HDM error occurred.'), request_data=hdm_data,
+                                            model=self._name)
             return response
         receipt_id = self.env['hdm.receipt'].sudo().create({
             'rseq': response.get('rseq', ''),

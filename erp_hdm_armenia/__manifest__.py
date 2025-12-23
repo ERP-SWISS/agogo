@@ -10,6 +10,7 @@
         'views/hdm.xml',
         'views/product.xml',
         'views/hdm_receipt.xml',
+        'views/log.xml',
         'security/ir.model.access.csv'
     ],
     'external_dependencies': {'python': ['pycryptodome']}
