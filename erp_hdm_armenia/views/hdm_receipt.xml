@@ -85,4 +85,10 @@
               action="action_hdm_receipt"
               sequence="50"/>
 
+     <menuitem id="menu_hdm_receipt_logs"
+              name="HDM Receipts"
+              parent="erp_hdm_armenia.menu_hdm_log"
+              action="action_hdm_receipt"
+              sequence="10"/>
+
 </odoo>
